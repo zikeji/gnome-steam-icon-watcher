@@ -16,6 +16,22 @@ cargo run --release
 
 Or install the binary and run it directly.
 
+## Quick Install / Update / Uninstall
+
+> ⚠️ **Warning:** Always review scripts before running code from the internet! This script will download and install a binary, create a user systemd service, and can also uninstall everything it sets up.
+
+Install or update to the latest release:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/zikeji/gnome-steam-icon-watcher/main/installer.sh | bash
+```
+
+Uninstall and clean up:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/zikeji/gnome-steam-icon-watcher/main/installer.sh | bash -s -- uninstall
+```
+
 ## Running as a systemd user service
 
 1. Create a systemd unit file at `~/.config/systemd/user/gnome-steam-icon-watcher.service` with the following contents:
