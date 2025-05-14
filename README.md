@@ -7,6 +7,10 @@ Monitor Steam game launches on Linux and dynamically create and remove `.desktop
 - Creates a `.desktop` file for each running game, using the correct Steam icon if available.
 - Removes the `.desktop` file when the game exits.
 
+### Limitation
+
+The game icon is only available if you have used 'Manage → Add Desktop Shortcut' for the game in Steam at least once. Workarounds for this limitation are being explored.
+
 ## Usage
 
 Build and run manually:

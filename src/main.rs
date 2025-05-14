@@ -1,7 +1,7 @@
 use std::{thread, time::Duration};
 use env_logger::Env;
 use procfs::process::all_processes;
-use log::info;
+use log::{info, warn};
 use regex::Regex;
 use std::fs;
 use std::path::{Path};
@@ -51,12 +51,13 @@ fn extract_game_name(manifest_contents: &str) -> Option<String> {
 
 fn write_desktop_file(game_name: &str, app_id: &str) {
     let desktop_path = get_desktop_path(game_name);
+    let icon_name = if icon_exists(app_id) {
+        format!("steam_icon_{}", app_id)
+    } else {
+        warn!("No Steam icon found for '{}'. To get the correct icon, use 'Manage → Add Desktop Shortcut' in Steam for this game.", game_name);
+        "steam".to_string()
+    };
     if !Path::new(&desktop_path).exists() {
-        let icon_name = if icon_exists(app_id) {
-            format!("steam_icon_{}", app_id)
-        } else {
-            "steam".to_string()
-        };
         let desktop_contents = format!(
             "[Desktop Entry]\nName={}\nExec=steam steam://rungameid/{}\nType=Application\nIcon={}\nCategories=Game;\nTerminal=false\nStartupWMClass=steam_app_{}\nComment=Play {} on Steam\n",
             game_name, app_id, icon_name, app_id, game_name
