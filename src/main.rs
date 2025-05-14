@@ -1,4 +1,4 @@
-use std::{collections::HashMap, thread, time::Duration};
+use std::{thread, time::Duration};
 use env_logger::Env;
 use procfs::process::all_processes;
 use log::info;
@@ -75,14 +75,14 @@ fn remove_desktop_file(game_name: &str) {
 }
 
 fn main() {
+    use std::collections::HashSet;
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-    let mut active_games: HashMap<i32, (String, String)> = HashMap::new();
+    let mut active_games: HashSet<(String, String)> = HashSet::new();
     loop {
-        let mut current_games: HashMap<i32, (String, String)> = HashMap::new();
+        let mut current_games: HashSet<(String, String)> = HashSet::new();
         if let Ok(procs) = all_processes() {
             for proc in procs {
                 if let Ok(p) = proc {
-                    let pid = p.pid();
                     if let Ok(cmdline) = p.cmdline() {
                         let joined = cmdline.join(" ");
                         let re = Regex::new(r"SteamLaunch AppId=(\d+)").unwrap();
@@ -92,9 +92,9 @@ fn main() {
                                 if let Ok(contents) = fs::read_to_string(&manifest_path) {
                                     if let Some(game_name) = extract_game_name(&contents) {
                                         let app_id = app_id.as_str().to_string();
-                                        current_games.insert(pid, (game_name.clone(), app_id.clone()));
-                                        if !active_games.contains_key(&pid) {
-                                            info!("Game '{}' ({}) detected with PID {}", game_name, app_id, pid);
+                                        current_games.insert((game_name.clone(), app_id.clone()));
+                                        if !active_games.contains(&(game_name.clone(), app_id.clone())) {
+                                            info!("Game '{}' ({}) detected", game_name, app_id);
                                             write_desktop_file(&game_name, &app_id);
                                         }
                                     }
@@ -105,11 +105,9 @@ fn main() {
                 }
             }
         }
-        for (pid, (game_name, _app_id)) in active_games.iter() {
-            if !current_games.contains_key(pid) {
-                info!("Game '{}' exited (PID {})", game_name, pid);
-                remove_desktop_file(game_name);
-            }
+        for (game_name, app_id) in active_games.difference(&current_games) {
+            info!("Game '{}' ({}) exited", game_name, app_id);
+            remove_desktop_file(game_name);
         }
         active_games = current_games;
         thread::sleep(Duration::from_secs(2));
