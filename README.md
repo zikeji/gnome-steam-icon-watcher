@@ -6,13 +6,12 @@ Monitor Steam game launches on Linux and dynamically create and remove `.desktop
 - Detects Steam game launches and exits by monitoring running processes.
 - Creates a `.desktop` file for each running game, using the correct Steam icon if available.
 - Removes the `.desktop` file when the game exits.
-- Supports debug logging with the `--debug` flag.
 
 ## Usage
 
 Build and run manually:
 ```sh
-cargo run --release -- [--debug]
+cargo run --release
 ```
 
 Or install the binary and run it directly.
@@ -49,10 +48,6 @@ systemctl --user enable --now gnome-steam-icon-watcher.service
 ```sh
 journalctl --user -u gnome-steam-icon-watcher.service -f
 ```
-
-## Debug Logging
-
-To enable debug logging, add the `--debug` flag to the `ExecStart` line in your systemd unit or when running manually. At the time this mainly just outputs game detections.
 
 ---
 

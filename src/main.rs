@@ -1,6 +1,7 @@
 use std::{collections::HashMap, thread, time::Duration};
+use env_logger::Env;
 use procfs::process::all_processes;
-use log::debug;
+use log::info;
 use regex::Regex;
 use std::fs;
 use std::path::{Path};
@@ -74,11 +75,7 @@ fn remove_desktop_file(game_name: &str) {
 }
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    if args.iter().any(|arg| arg == "--debug") {
-        unsafe { std::env::set_var("RUST_LOG", "debug"); }
-    }
-    env_logger::init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let mut active_games: HashMap<i32, (String, String)> = HashMap::new();
     loop {
         let mut current_games: HashMap<i32, (String, String)> = HashMap::new();
@@ -97,7 +94,7 @@ fn main() {
                                         let app_id = app_id.as_str().to_string();
                                         current_games.insert(pid, (game_name.clone(), app_id.clone()));
                                         if !active_games.contains_key(&pid) {
-                                            debug!("Game '{}' ({}) detected with PID {}", game_name, app_id, pid);
+                                            info!("Game '{}' ({}) detected with PID {}", game_name, app_id, pid);
                                             write_desktop_file(&game_name, &app_id);
                                         }
                                     }
@@ -110,7 +107,7 @@ fn main() {
         }
         for (pid, (game_name, _app_id)) in active_games.iter() {
             if !current_games.contains_key(pid) {
-                debug!("Game '{}' exited (PID {})", game_name, pid);
+                info!("Game '{}' exited (PID {})", game_name, pid);
                 remove_desktop_file(game_name);
             }
         }
