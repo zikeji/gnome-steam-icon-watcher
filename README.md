@@ -24,7 +24,7 @@ Or install the binary and run it directly.
 Install or update to the latest release:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/zikeji/linux-steam-icon-watcher/main/installer.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zikeji/linux-steam-icon-watcher/main/installer.sh | bash -s -- install
 ```
 
 Uninstall and clean up:
