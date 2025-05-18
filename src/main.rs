@@ -7,6 +7,9 @@ use std::{thread, time::Duration};
 use std::collections::HashSet;
 use env_logger::Env;
 
+#[cfg(not(target_os = "linux"))]
+compile_error!("This applications only works on Linux.");
+
 fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
