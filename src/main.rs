@@ -1,3 +1,4 @@
+mod appinfo_vdf;
 mod desktop;
 mod steam;
 mod monitor;

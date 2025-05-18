@@ -6,10 +6,7 @@ Monitor Steam game launches on Linux and dynamically create and remove `.desktop
 - Detects Steam game launches and exits by monitoring running processes.
 - Creates a `.desktop` file for each running game, using the correct Steam icon if available.
 - Removes the `.desktop` file when the game exits.
-
-### Limitation
-
-The game icon is only available if you have used 'Manage → Add Desktop Shortcut' for the game in Steam at least once. Workarounds for this limitation are being explored.
+- If the icon doesn't already exist in `~/.local/share/icons/hicolor`, sources it from the Steam installation, and, if unavailable, downloads from the Steam CDN.
 
 ## Usage
 
@@ -72,3 +69,10 @@ journalctl --user -u gnome-steam-icon-watcher.service -f
 ---
 
 **Note:** This tool is intended for Linux desktop environments that use `.desktop` files, such as GNOME.
+
+## Attribution
+
+The implementation in `appinfo_vdf.rs` is adapted from the below sources. I sold my soul to Copilot to save my sanity. I'm not cut out for writing raw binary handling like this.
+
+- [SteamDatabase/SteamAppInfo](https://github.com/SteamDatabase/SteamAppInfo)
+- [ValveResourceFormat/ValveKeyValue](https://github.com/ValveResourceFormat/ValveKeyValue)

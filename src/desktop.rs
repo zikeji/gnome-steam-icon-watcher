@@ -1,7 +1,11 @@
-use log::{warn};
+use log::{error, warn};
 use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
+use reqwest;
+use image;
+
+use crate::steam::get_clienticon_from_steam_appinfo;
 
 pub fn icon_exists(app_id: &str) -> bool {
     let home = std::env::var("HOME").unwrap_or_default();
@@ -37,8 +41,25 @@ pub fn write_desktop_file(game_name: &str, app_id: &str) {
     let icon_name = if icon_exists(app_id) {
         format!("steam_icon_{}", app_id)
     } else {
-        warn!("No Steam icon found for '{}'. To get the correct icon, use 'Manage → Add Desktop Shortcut' in Steam for this game.", game_name);
-        "steam".to_string()
+        match get_clienticon_from_steam_appinfo(app_id) {
+            Ok(Some(clienticon)) => {
+                if process_steam_icon(app_id, &clienticon) {
+                    format!("steam_icon_{}", app_id)
+                } else {
+                    warn!("Failed to obtain icon for '{}'. To attempt to manually populate the correct icon, use 'Manage → Add Desktop Shortcut' in Steam for this game.", game_name);
+                    "steam".to_string()
+                }
+            },
+            Ok(None) => {
+                warn!("No icon found for '{}'. To attempt to manually populate the correct icon, use 'Manage → Add Desktop Shortcut' in Steam for this game.", game_name);
+                "steam".to_string()
+            },
+            Err(e) => {
+                println!("Error: {}", e);
+                warn!("No icon found for '{}'. To attempt to manually populate the correct icon, use 'Manage → Add Desktop Shortcut' in Steam for this game.", game_name);
+                "steam".to_string()
+            },
+        }
     };
     if !Path::new(&desktop_path).exists() {
         let desktop_contents = format!(
@@ -56,4 +77,100 @@ pub fn remove_desktop_file(game_name: &str) {
     if let Err(e) = fs::remove_file(&desktop_path) {
         let _ = writeln!(io::stderr(), "Failed to remove desktop file: {}", e);
     }
+}
+
+pub fn process_steam_icon(app_id: &str, clienticon: &str) -> bool {
+    let home = std::env::var("HOME").unwrap_or_default();
+    let local_ico_path = format!("{}/.local/share/Steam/steam/games/{}.ico", home, clienticon);
+
+    if Path::new(&local_ico_path).exists() {
+        // Load from local file
+        match image::open(&local_ico_path) {
+            Ok(img) => convert_icon(app_id, img),
+            Err(e) => {
+                error!("Failed to open icon file {}: {}", local_ico_path, e);
+                false
+            }
+        }
+    } else {
+        // Download and load from memory
+        match download_steam_icon(app_id, clienticon) {
+            Ok(Some(icon_data)) => match image::load_from_memory(&icon_data) {
+                Ok(img) => convert_icon(app_id, img),
+                Err(e) => {
+                    error!("Failed to download icon from Steam CDN: {}", e);
+                    false
+                }
+            },
+            _ => false
+        }
+    }
+}
+
+fn download_steam_icon(app_id: &str, clienticon: &str) -> io::Result<Option<Vec<u8>>> {
+    let url = format!(
+        "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/{}/{}.ico",
+        app_id, clienticon
+    );
+
+    let client = reqwest::blocking::Client::new();
+    let response = match client.get(&url).send() {
+        Ok(resp) => {
+            if !resp.status().is_success() {
+                error!("Failed to download icon from {}: HTTP {}", url, resp.status());
+                return Ok(None);
+            }
+            resp
+        },
+        Err(e) => {
+            error!("Failed to download icon from {}: {}", url, e);
+            return Err(io::Error::new(io::ErrorKind::Other, e));
+        }
+    };
+
+    match response.bytes() {
+        Ok(bytes) => Ok(Some(bytes.to_vec())),
+        Err(e) => {
+            error!("Failed to read icon data: {}", e);
+            Err(io::Error::new(io::ErrorKind::Other, e))
+        }
+    }
+}
+
+fn convert_icon(app_id: &str, img: image::DynamicImage) -> bool {
+    let home = std::env::var("HOME").unwrap_or_default();
+    let hicolor_path = format!("{}/.local/share/icons/hicolor", home);
+
+    let icon_sizes = vec!["16x16", "32x32", "48x48", "128x128", "256x256"];
+    
+    let mut success = false;
+
+    for size in icon_sizes {
+        let dir_path = format!("{}/{}/apps", hicolor_path, size);
+        let _ = fs::create_dir_all(&dir_path);
+
+        let target_path = format!("{}/steam_icon_{}.png", dir_path, app_id);
+
+        let dimensions: Vec<&str> = size.split('x').collect();
+        if dimensions.len() != 2 {
+            continue;
+        }
+
+        let width: u32 = dimensions[0].parse().unwrap_or(0);
+        let height: u32 = dimensions[1].parse().unwrap_or(0);
+
+        if width == 0 || height == 0 {
+            continue;
+        }
+
+        let resized = img.resize(width, height, image::imageops::FilterType::Lanczos3);
+
+        if let Err(e) = resized.save_with_format(&target_path, image::ImageFormat::Png) {
+            warn!("Failed to save icon to {}: {}", target_path, e);
+        } else {
+            success = true;
+        }
+    }
+
+    success
 }
