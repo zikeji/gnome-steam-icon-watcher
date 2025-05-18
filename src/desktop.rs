@@ -42,7 +42,7 @@ pub fn write_desktop_file(game_name: &str, app_id: &str) {
     };
     if !Path::new(&desktop_path).exists() {
         let desktop_contents = format!(
-            "[Desktop Entry]\nName={}\nExec=steam steam://rungameid/{}\nType=Application\nIcon={}\nCategories=Game;\nTerminal=false\nStartupWMClass=steam_app_{}\nComment=Play {} on Steam\n",
+            "[Desktop Entry]\nName={}\nExec=steam steam://rungameid/{}\nType=Application\nIcon={}\nCategories=Game;\nTerminal=false\nStartupWMClass=steam_app_{}\nComment=Play {} on Steam\nNoDisplay=true\n",
             game_name, app_id, icon_name, app_id, game_name
         );
         if let Err(e) = fs::write(&desktop_path, desktop_contents) {
