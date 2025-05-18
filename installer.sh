@@ -116,13 +116,22 @@ install() {
   curl -sL "$release_download_url" -o "$BINARY_PATH"
   chmod +x "$BINARY_PATH"
 
-  log_step "Creating systemd user service directory..."
-  mkdir -p "$HOME/.config/systemd/user"
+  if [[ ! -d "$HOME/.config/systemd/user" ]]; then
+    log_step "Creating systemd user service directory..."
+    mkdir -p "$HOME/.config/systemd/user"
+  fi
 
-  log_step "Writing systemd service file..."
-  cat > "$SERVICE_PATH" <<EOF
+  if [[ -f "$SERVICE_PATH" ]]; then
+    # If the service file already exists, we will just restart at this point
+    # instead of potentially overwriting customizations the user has made
+    log_step "Restarting service..."
+    systemctl --user restart $SERVICE
+  else
+    log_step "Creating systemd service file..."
+    cat > "$SERVICE_PATH" <<EOF
 [Unit]
 Description=Steam Icon Watcher
+Documentation=https://github.com/zikeji/linux-steam-icon-watcher
 
 [Service]
 ExecStart=$BINARY_PATH
@@ -132,11 +141,12 @@ Restart=on-failure
 WantedBy=default.target
 EOF
 
-  log_step "Reloading systemd daemon..."
-  systemctl --user daemon-reload
+    log_step "Reloading systemd daemon..."
+    systemctl --user daemon-reload
 
-  log_step "Enabling and starting service..."
-  systemctl --user enable --now $SERVICE
+    log_step "Enabling and starting service..."
+    systemctl --user enable --now $SERVICE
+  fi
 
   if [[ $binary_exists -eq 1 ]]; then
     log_success "Update complete. Service is now running. You can check the status with 'systemctl --user status $SERVICE'."
