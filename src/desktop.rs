@@ -3,7 +3,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
 use reqwest;
-use image;
+use image::{self};
 
 use crate::steam::get_clienticon_from_steam_appinfo;
 
@@ -141,15 +141,12 @@ fn convert_icon(app_id: &str, img: image::DynamicImage) -> bool {
     let home = std::env::var("HOME").unwrap_or_default();
     let hicolor_path = format!("{}/.local/share/icons/hicolor", home);
 
-    let icon_sizes = vec!["16x16", "32x32", "48x48", "128x128", "256x256"];
+    let icon_sizes = vec!["256x256", "128x128", "96x96", "64x64", "48x48", "32x32", "24x24", "16x16"];
     
     let mut success = false;
 
     for size in icon_sizes {
         let dir_path = format!("{}/{}/apps", hicolor_path, size);
-        let _ = fs::create_dir_all(&dir_path);
-
-        let target_path = format!("{}/steam_icon_{}.png", dir_path, app_id);
 
         let dimensions: Vec<&str> = size.split('x').collect();
         if dimensions.len() != 2 {
@@ -159,10 +156,12 @@ fn convert_icon(app_id: &str, img: image::DynamicImage) -> bool {
         let width: u32 = dimensions[0].parse().unwrap_or(0);
         let height: u32 = dimensions[1].parse().unwrap_or(0);
 
-        if width == 0 || height == 0 {
+        if width == 0 || height == 0 || img.width() < width || img.height() < height {
             continue;
         }
 
+        let _ = fs::create_dir_all(&dir_path);
+        let target_path = format!("{}/steam_icon_{}.png", dir_path, app_id);
         let resized = img.resize(width, height, image::imageops::FilterType::Lanczos3);
 
         if let Err(e) = resized.save_with_format(&target_path, image::ImageFormat::Png) {
