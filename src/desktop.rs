@@ -2,6 +2,7 @@ use log::{error, warn};
 use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
+use std::process::Command;
 use reqwest;
 use image::{self};
 
@@ -169,6 +170,14 @@ fn convert_icon(app_id: &str, img: image::DynamicImage) -> bool {
         } else {
             success = true;
         }
+    }
+
+    if success {
+        let _ = Command::new("gtk-update-icon-cache")
+            .arg("--ignore-theme-index")
+            .arg("-f")
+            .arg(&hicolor_path)
+            .output();
     }
 
     success
