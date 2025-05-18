@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-INSTALL_DIR="$HOME/.local/share/gnome-steam-icon-watcher"
-BINARY_PATH="$INSTALL_DIR/gnome-steam-icon-watcher"
-SERVICE_PATH="$HOME/.config/systemd/user/gnome-steam-icon-watcher.service"
-REPO="zikeji/gnome-steam-icon-watcher"
+INSTALL_DIR="$HOME/.local/share/linux-steam-icon-watcher"
+BINARY_PATH="$INSTALL_DIR/linux-steam-icon-watcher"
+SERVICE_PATH="$HOME/.config/systemd/user/linux-steam-icon-watcher.service"
+REPO="zikeji/linux-steam-icon-watcher"
 
 usage() {
   echo "Usage: $0 [uninstall]"
@@ -14,7 +14,7 @@ usage() {
 if [[ "$1" == "uninstall" ]]; then
   read -p "Disable and remove systemd service? [y/N] " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
-    systemctl --user disable --now gnome-steam-icon-watcher.service || true
+    systemctl --user disable --now linux-steam-icon-watcher.service || true
     rm -f "$SERVICE_PATH"
     echo "Service removed."
   else
@@ -35,13 +35,13 @@ mkdir -p "$INSTALL_DIR"
 
 if [[ -f "$BINARY_PATH" ]]; then
   # If the service is running, stop it before overwriting the binary
-  if systemctl --user is-active --quiet gnome-steam-icon-watcher.service; then
+  if systemctl --user is-active --quiet linux-steam-icon-watcher.service; then
     echo "Service is running, stopping it before updating binary..."
-    systemctl --user stop gnome-steam-icon-watcher.service
+    systemctl --user stop linux-steam-icon-watcher.service
   fi
 fi
 
-LATEST_URL=$(curl -sL "https://api.github.com/repos/$REPO/releases/latest" | grep browser_download_url | grep gnome-steam-icon-watcher | cut -d '"' -f 4)
+LATEST_URL=$(curl -sL "https://api.github.com/repos/$REPO/releases/latest" | grep browser_download_url | grep linux-steam-icon-watcher | cut -d '"' -f 4)
 if [[ -z "$LATEST_URL" ]]; then
   echo "Failed to find latest release binary URL." >&2
   exit 1
@@ -65,6 +65,6 @@ WantedBy=default.target
 EOF
 
 systemctl --user daemon-reload
-systemctl --user enable --now gnome-steam-icon-watcher.service
+systemctl --user enable --now linux-steam-icon-watcher.service
 
 echo "Install complete. Service is running."

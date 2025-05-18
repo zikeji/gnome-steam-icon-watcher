@@ -1,6 +1,6 @@
-# gnome-steam-icon-watcher
+# linux-steam-icon-watcher
 
-Monitor Steam game launches on Linux and dynamically create and remove `.desktop` launcher files in `~/.local/share/applications` for each running game. This is useful for integrating Steam games with GNOME Shell and other desktop environments without adding permanent shortcuts.
+Monitor Steam game launches on Linux and dynamically create and remove temporary `.desktop` launcher files in `~/.local/share/applications` for them. This is useful for integrating Steam games with GNOME Shell and other desktop environments without adding permanent shortcuts.
 
 ## Features
 - Detects Steam game launches and exits by monitoring running processes.
@@ -24,32 +24,32 @@ Or install the binary and run it directly.
 Install or update to the latest release:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/zikeji/gnome-steam-icon-watcher/main/installer.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zikeji/linux-steam-icon-watcher/main/installer.sh | bash
 ```
 
 Uninstall and clean up:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/zikeji/gnome-steam-icon-watcher/main/installer.sh | bash -s -- uninstall
+curl -fsSL https://raw.githubusercontent.com/zikeji/linux-steam-icon-watcher/main/installer.sh | bash -s -- uninstall
 ```
 
 ## Running as a systemd user service
 
-1. Create a systemd unit file at `~/.config/systemd/user/gnome-steam-icon-watcher.service` with the following contents:
+1. Create a systemd unit file at `~/.config/systemd/user/linux-steam-icon-watcher.service` with the following contents:
 
 ```
 [Unit]
-Description=GNOME Steam Icon Watcher
+Description=Steam Icon Watcher
 
 [Service]
-ExecStart=%h/.cargo/bin/gnome-steam-icon-watcher
+ExecStart=%h/.cargo/bin/linux-steam-icon-watcher
 Restart=on-failure
 
 [Install]
 WantedBy=default.target
 ```
 
-- Adjust the `ExecStart` path if your binary is elsewhere (e.g., use `%h/Projects/gnome-steam-icon-watcher/target/release/gnome-steam-icon-watcher` if running from source).
+- Adjust the `ExecStart` path if your binary is elsewhere (e.g., use `%h/Projects/linux-steam-icon-watcher/target/release/linux-steam-icon-watcher` if running from source).
 
 2. Reload systemd user units:
 ```sh
@@ -58,12 +58,12 @@ systemctl --user daemon-reload
 
 3. Enable and start the service:
 ```sh
-systemctl --user enable --now gnome-steam-icon-watcher.service
+systemctl --user enable --now linux-steam-icon-watcher.service
 ```
 
 4. To check logs:
 ```sh
-journalctl --user -u gnome-steam-icon-watcher.service -f
+journalctl --user -u linux-steam-icon-watcher.service -f
 ```
 
 ---

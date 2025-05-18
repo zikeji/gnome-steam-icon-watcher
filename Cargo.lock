@@ -574,19 +574,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
 
 [[package]]
-name = "gnome-steam-icon-watcher"
-version = "1.1.0"
-dependencies = [
- "byteorder",
- "env_logger",
- "image",
- "log",
- "procfs",
- "regex",
- "reqwest",
-]
-
-[[package]]
 name = "h2"
 version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1053,6 +1040,19 @@ name = "linux-raw-sys"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd945864f07fe9f5371a27ad7b52a172b4b499999f1d97574c9fa68373937e12"
+
+[[package]]
+name = "linux-steam-icon-watcher"
+version = "1.1.0"
+dependencies = [
+ "byteorder",
+ "env_logger",
+ "image",
+ "log",
+ "procfs",
+ "regex",
+ "reqwest",
+]
 
 [[package]]
 name = "litemap"

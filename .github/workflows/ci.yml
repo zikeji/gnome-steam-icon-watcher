@@ -40,8 +40,8 @@ jobs:
       - name: Upload release binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gnome-steam-icon-watcher-x86_64
-          path: target/x86_64-unknown-linux-gnu/release/gnome-steam-icon-watcher
+          name: linux-steam-icon-watcher-x86_64
+          path: target/x86_64-unknown-linux-gnu/release/linux-steam-icon-watcher
 
   changelog:
     name: Generate changelog
@@ -76,13 +76,13 @@ jobs:
       - name: Download release binary artifact
         uses: actions/download-artifact@v4
         with:
-          name: gnome-steam-icon-watcher-x86_64
+          name: linux-steam-icon-watcher-x86_64
           path: ./release_bin
       - name: Upload the binary releases
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./release_bin/gnome-steam-icon-watcher
+            ./release_bin/linux-steam-icon-watcher
             CHANGELOG.md
           body: ${{ needs.changelog.outputs.release_body }}
         env:
